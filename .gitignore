@@ -11,4 +11,5 @@ venv*/
 
 # VS Code IDE
 /.vscode/
+<<<<<<< HEAD
 *.code-workspace

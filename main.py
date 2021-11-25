@@ -4,7 +4,7 @@ import argparse
 import logging
 import os
 
-PARENT_DIR = '.\\data'
+PARENT_DIR = 'data'
 
 def main():
     logging.debug('Start server')

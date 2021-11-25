@@ -41,7 +41,7 @@ class TestGetFiles:
         """Pass . as argument
         """
 
-        return type(FileService.get_files()) == list
+        return isinstance(FileService.get_files(), list)
 
 
 class TestGetFileData:

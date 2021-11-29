@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import sys
+import logging
 
 import utils.TimeUtils as TimeUtils
 
@@ -29,9 +30,11 @@ def change_dir(path: str, autocreate: bool = True) -> None:
     if not os.path.exists(path):
         if autocreate:
             os.makedirs(path)
+            logging.debug(f"Created folder {path}")
         else:
             raise RuntimeError('Directory {} is not found'.format(path))
     os.chdir(path)
+    logging.debug(f"Changed folder {path}")
 
 
 def get_files() -> list:
@@ -46,6 +49,7 @@ def get_files() -> list:
     """
 
     path = os.getcwd()
+    logging.debug(f"Folder {path}")
 
     # get list of files in `path`
     files = []
@@ -64,7 +68,7 @@ def get_files() -> list:
             'edit_date': TimeUtils.floattime_to_datatime(os.path.getmtime(full_filename)),
             'size': os.path.getsize(full_filename),
         })
-
+        logging.debug(f"{data['name']} size {data['size']}")
     return data
 
 
@@ -118,6 +122,7 @@ def get_file_data(filename: str) -> dict:
     if not os.path.exists(local_file):
         raise RuntimeError('File {} does not exist'.format(filename))
 
+    logging.debug(f"Getting data {local_file}")
     with open(local_file, 'rb') as file_handler:
         return {
             'name': filename,
@@ -156,6 +161,8 @@ def create_file(filename: str, content: str = None) -> dict:
             data = bytes(content)
             file_handler.write(data)
 
+    logging.debug(f"File created {local_file}")
+
     return {
         'name': filename,
         'create_date': TimeUtils.floattime_to_datatime(os.path.getctime(local_file)),
@@ -181,5 +188,7 @@ def delete_file(filename: str) -> None:
 
     if os.path.isdir(local_file):
         shutil.rmtree(local_file)
+        logging.debug(f"Folder removed {local_file}")
     else:
         os.remove(local_file)
+        logging.debug(f"File removed {local_file}")

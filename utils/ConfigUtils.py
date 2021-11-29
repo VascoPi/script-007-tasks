@@ -1,10 +1,12 @@
 import argparse
+import logging
 import os
 import configparser
 from utils.Utils import singleton
 
 DEFAULT_CONFIG = "config.ini"
 APP_NAME = "FILE_SERVER"
+logging.getLogger(APP_NAME)
 
 
 @singleton
@@ -36,21 +38,21 @@ class Config:
     def _read_env(self):
         for param in self.params_keys:
             if os.environ.get(param, None):
-                self[param] = os.environ[f"{param.upper()}_{APP_NAME}"]
+                self[param] = os.environ[f"{APP_NAME}_{param.upper()}"]
 
     def _read_ini(self):
         parser = configparser.ConfigParser()
         parser.read(DEFAULT_CONFIG)
 
         for section in parser.sections():
-            for k, v in parser[section].items():
-                self[k] = v
+            for key, value in parser[section].items():
+                self[key] = value
 
     def set_data(self):
         self._read_ini()
         self._read_env()
         self._read_args()
-        print(f"Set params {self.data}")
+        logging.debug(f"Set params {self.data}")
 
     def __setitem__(self, key, value):
         self.data[key] = self.params_keys.get(key, str)(value)

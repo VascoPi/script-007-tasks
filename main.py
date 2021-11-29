@@ -41,9 +41,9 @@ def setup_logger(level='NOTSET', filename=None):
 
 def main():
 
-    setup_logger(level=logging.getLevelName(config_data.data['log_level'].upper()), filename=config_data.data['log_file'])
+    setup_logger(level=logging.getLevelName(config_data['log_level'].upper()), filename=config_data['log_file'])
     logging.debug('started')
-    FileService.change_dir(config_data.data['dir'])
+    FileService.change_dir(config_data['dir'])
 
 
 if __name__ == '__main__':

@@ -1,27 +1,20 @@
 import argparse
-import logging
 import os
 import configparser
-
+from utils.Utils import singleton
 
 DEFAULT_CONFIG = "config.ini"
-
-
-def singleton(cls):
-    instances = {}
-
-    def getinstance(*args, **kwargs):
-        if cls not in instances:
-            instances[cls] = cls(*args, **kwargs)
-        return instances[cls]
-
-    return getinstance
+APP_NAME = "FILE_SERVER"
 
 
 @singleton
 class Config:
     data = {}
-    params_keys = ['dir', 'log_level', 'log_file', 'port']
+    params_keys = {'dir': str,
+                   'log_level': str,
+                   'log_file': str,
+                   'port': int
+                   }
 
     def __init__(self):
         self.set_data()
@@ -38,12 +31,12 @@ class Config:
         for key in self.params_keys:
             value = getattr(params, key, None)
             if value:
-                self.data[key] = value
+                self[key] = value
 
     def _read_env(self):
         for param in self.params_keys:
             if os.environ.get(param, None):
-                self.data[param] = os.environ[param]
+                self[param] = os.environ[f"{param.upper()}_{APP_NAME}"]
 
     def _read_ini(self):
         parser = configparser.ConfigParser()
@@ -51,13 +44,19 @@ class Config:
 
         for section in parser.sections():
             for k, v in parser[section].items():
-                self.data[k] = v
+                self[k] = v
 
     def set_data(self):
         self._read_ini()
         self._read_env()
         self._read_args()
         print(f"Set params {self.data}")
+
+    def __setitem__(self, key, value):
+        self.data[key] = self.params_keys.get(key, str)(value)
+
+    def __getitem__(self, item):
+        return self.data[item]
 
 
 config_data = Config()

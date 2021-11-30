@@ -61,4 +61,4 @@ class Config:
         return self.data[item]
 
 
-config_data = Config()
+config = Config()

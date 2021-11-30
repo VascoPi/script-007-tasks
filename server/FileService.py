@@ -154,7 +154,7 @@ def create_file(filename: str, content: str = None) -> dict:
     local_file = _filename_to_local_path(filename)
 
     if os.path.exists(local_file):
-        logging.warn('file %s exists', local_file)
+        logging.warning('file %s exists', local_file)
 
     with open(local_file, 'wb') as file_handler:
         if content:

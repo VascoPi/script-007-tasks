@@ -3,13 +3,15 @@ from utils.LoggingUtils import setup_logger
 import logging
 import logging.config
 import sys
-from utils.ConfigUtils import config_data
 
-import server.FileService as FileService
+from aiohttp import web
+
+from server.WebHandler import WebHandler
+from utils.ConfigUtils import config
 
 
 def setup_logger(level='NOTSET', filename=None):
-    config = {
+    logger_conf = {
         'version': 1,
         'formatters': {
             'default': {
@@ -29,21 +31,33 @@ def setup_logger(level='NOTSET', filename=None):
         }
     }
     if filename:
-        config['handlers']['file'] = {
+        logger_conf['handlers']['file'] = {
             'class': 'logging.FileHandler',
             'encoding': 'UTF-8',
             'formatter': 'default',
             'filename': filename,
         }
-        config['root']['handlers'].append('file')
-    logging.config.dictConfig(config)
+        logger_conf['root']['handlers'].append('file')
+    logging.config.dictConfig(logger_conf)
 
 
 def main():
-
-    setup_logger(level=logging.getLevelName(config_data['log_level'].upper()), filename=config_data['log_file'])
+    setup_logger(level=logging.getLevelName(config['log_level'].upper()), filename=config['log_file'])
     logging.debug('started')
-    FileService.change_dir(config_data['dir'])
+    logging.debug('config %s', config)
+
+    handler = WebHandler()
+    app = web.Application()
+    app.add_routes([
+        web.get('/', handler.handle),
+        web.post('/create_file', handler.create_file),
+        web.post('/change_dir', handler.change_dir),
+        web.get('/get_files', handler.get_files),
+        web.get('/get_file_data', handler.get_file_data),
+        web.delete('/delete_file', handler.delete_file),
+    ])
+
+    web.run_app(app, host=config['host'], port=config['port'])
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse
+from utils.LoggingUtils import setup_logger
 import logging
 import logging.config
 import sys

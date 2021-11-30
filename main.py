@@ -1,41 +1,56 @@
 #!/usr/bin/env python3
-import argparse
-import os
 from utils.LoggingUtils import setup_logger
 import logging
+import logging.config
+import sys
+from utils.ConfigUtils import config_data
 
 import server.FileService as FileService
 
 
+def setup_logger(level='NOTSET', filename=None):
+    config = {
+        'version': 1,
+        'formatters': {
+            'default': {
+                'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+            },
+        },
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'default',
+                'level': level,
+            },
+        },
+        'root': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
+    }
+    if filename:
+        config['handlers']['file'] = {
+            'class': 'logging.FileHandler',
+            'encoding': 'UTF-8',
+            'formatter': 'default',
+            'filename': filename,
+        }
+        config['root']['handlers'].append('file')
+    logging.config.dictConfig(config)
+
+
 def main():
-    """Entry point of app.
 
-    Get and parse command line parameters and configure web app.
-
-    Command line options:
-    -d --dir  - working directory (absolute or relative path, default: current_app_folder/data).
-    -h --help - help.
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--dir', default='data', type=str,
-                        help="working directory (default: 'data')")
-    parser.add_argument('-l', '--log_level', default='DEBUG',
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'WARNING'],
-                        help="logging level (default: 'DEBUG')")
-
-    parser.add_argument('--log_file', default='server.log', type=str,
-                        help="logging file (default: 'server.log')")
-
-    params = parser.parse_args()
-
-    setup_logger(level=params.log_level.upper(), filename=params.log_file)
-
-    work_dir = params.dir if os.path.isabs(params.dir) else os.path.join(os.getcwd(), params.dir)
-    FileService.change_dir(work_dir)
+    setup_logger(level=logging.getLevelName(config_data['log_level'].upper()), filename=config_data['log_file'])
+    logging.debug('started')
+    FileService.change_dir(config_data['dir'])
 
 
 if __name__ == '__main__':
     try:
         main()
-    except Exception as e:
-        logging.error(e)
+    except KeyboardInterrupt:
+        sys.exit('\nERROR: Interrupted by user')
+    except BaseException as err:
+        print(f'ERROR: Something goes wrong:\n{err}')
+        sys.exit(1)
